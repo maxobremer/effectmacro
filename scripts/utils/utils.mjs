@@ -33,7 +33,42 @@ async function _callMacro(effect, type = "never", context = {}) {
     return null;
   }
 }
+/* -------------------------------------------------- */
 
+/**
+ * Synchronous internal method to call a specific type of script in an effect.
+ * @param {foundry.documents.ActiveEffect} effect   The effect.
+ * @param {string} [type="never"]                   The trigger of the script.
+ * @param {object} [context={}]                     Additional arguments to pass to the macro.
+ * @returns {void|null}
+ */
+function _callMacroSync(effect, type = "never", context = {}) {
+  const script = effect.getFlag(effectmacro.id, `${type}.script`);
+  if (!script) return;
+
+  // CRITICAL FIX: Use spread syntax to preserve references to objects like 'damages'
+  const variables = { ...getHelperVariables(effect), ...context };
+
+  // Use standard Function (Synchronous) instead of AsyncFunction
+  const fn = new Function(...Object.keys(variables), `{${script}\n}`);
+  try {
+    return fn.call(context, ...Object.values(variables));
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
+}
+
+/**
+ * Synchronous method to call a specific type of script in an effect.
+ * @param {foundry.documents.ActiveEffect} effect   The effect.
+ * @param {string} [type="never"]                   The trigger of the script.
+ * @param {object} [context={}]                     Additional arguments to pass to the macro.
+ * @returns {void|null}
+ */
+export function callMacroSync(effect, type = "never", context = {}) {
+  return _callMacroSync(effect, type, context);
+}
 /* -------------------------------------------------- */
 
 /**
