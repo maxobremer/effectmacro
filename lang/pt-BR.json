@@ -30,6 +30,7 @@
       "RollTriggers": "Rolagens",
 
       "beginConcentrating": "Quando a Concentração começar",
+      "calculateDamage": "Quando o dano for calculado (Pré-Aplicação)",
       "damageActor": "Quando o ator sofrer dano",
       "endConcentration": "Quando a Concentração terminar",
       "healActor": "Quando o ator for curado",
