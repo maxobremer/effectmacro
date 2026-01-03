@@ -33,7 +33,8 @@ export default function init() {
         "dnd5e.healActor",
         "dnd5e.damageActor",
         "dnd5e.beginConcentrating",
-        "dnd5e.endConcentration"
+        "dnd5e.endConcentration",
+        "dnd5e.calculateDamage" // <--- ADDED THIS LINE
       ]
     }
   );
@@ -53,6 +54,7 @@ export default function init() {
   Hooks.on("dnd5e.damageActor", damageActor);
   Hooks.on("dnd5e.beginConcentrating", beginConcentrating);
   Hooks.on("dnd5e.endConcentration", endConcentration);
+  Hooks.on("dnd5e.calculateDamage", calculateDamage); // <--- ADDED THIS LINE
 }
 
 /* -------------------------------------------------- */
@@ -69,6 +71,25 @@ async function _executeAppliedEffects(actor, hook, context = {}) {
 
   for (const e of actor.appliedEffects.filter((e) => effectmacro.utils.hasMacro(e, hook)))
     await effectmacro.utils.callMacro(e, hook, context);
+}
+
+/* -------------------------------------------------- */
+
+/**
+ * Synchronous version of _executeAppliedEffects.
+ * Used for hooks where the return value (false) must block the system immediately.
+ */
+function _executeAppliedEffectsSync(actor, hook, context = {}) {
+  if (!effectmacro.utils.isExecutor(actor)) return true;
+
+  let execute = true;
+  for (const e of actor.appliedEffects.filter((e) => effectmacro.utils.hasMacro(e, hook))) {
+    // We assume callMacroSync is available on effectmacro.utils 
+    // (Ensure you updated utils.mjs to export it)
+    const result = effectmacro.utils.callMacroSync(e, hook, context);
+    if (result === false) execute = false;
+  }
+  return execute;
 }
 
 /* -------------------------------------------------- */
@@ -261,4 +282,17 @@ async function beginConcentrating(actor, item, effect, activity) {
 async function endConcentration(actor, effect) {
   if (!actor) return;
   return _executeAppliedEffects(actor, "dnd5e.endConcentration", { effect });
+}
+
+/* -------------------------------------------------- */
+
+/**
+ * On damage calculation (Pre-Application).
+ * @param {foundry.documents.Actor} actor       The actor being damaged.
+ * @param {object[]} damages                    Array of damage descriptions.
+ * @param {object} options                      Damage application options.
+ */
+function calculateDamage(actor, damages, options) {
+  // Use _executeAppliedEffectsSync instead of the async version
+  return _executeAppliedEffectsSync(actor, "dnd5e.calculateDamage", { damages, options });
 }
