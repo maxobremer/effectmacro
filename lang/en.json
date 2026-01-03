@@ -30,6 +30,7 @@
       "RollTriggers": "Rolls",
 
       "beginConcentrating": "When concentration begins",
+      "calculateDamage": "When damage is calculated (Pre-Apply)",
       "damageActor": "When the actor receives damage",
       "endConcentration": "When concentration ends",
       "healActor": "When the actor is healed",
@@ -65,3 +66,4 @@
     }
   }
 }
+
